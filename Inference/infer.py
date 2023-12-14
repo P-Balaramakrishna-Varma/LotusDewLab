@@ -3,6 +3,8 @@ import numpy as np
 from scipy.stats import norm
 
 
+# Read the log file and create a mapping of symbol to its values
+# agrregate the values for each symbol
 mapping = {}
 log_file = 'stock_values.log'
 with open(log_file, 'r') as file:
@@ -14,9 +16,11 @@ with open(log_file, 'r') as file:
             mapping[data['payload'][0]['symbol']].append(data['payload'][2])
         else:
             mapping[data['payload'][0]['symbol']] = [data['payload'][2]]
-
-
 # print(mapping)
+
+
+
+# Calculate the difference between each value for each symbol
 for key in mapping:
     value = mapping[key]
     new_val = []
@@ -28,6 +32,8 @@ for key in mapping:
     mapping[key] = new_val
 
 
+# Create a reverse mapping of value to symbol
+# needed for infernce
 reverse_mapping = {}
 data = []
 for key, value in mapping.items():
@@ -48,6 +54,9 @@ mean = np.mean(data)
 std_dev = np.std(data)
 percentile_95 = norm.ppf(0.95, loc=mean, scale=std_dev)
 data_above_95th_percentile = [x for x in data if x > percentile_95]
+
+
+# get the symmbols for the top 95 percentile
 Symbols = []
 for val in data_above_95th_percentile:
     Symbols.extend(reverse_mapping[val])
