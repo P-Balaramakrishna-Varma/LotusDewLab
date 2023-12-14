@@ -1,4 +1,6 @@
 import json
+import numpy as np
+from scipy.stats import norm
 
 
 mapping = {}
@@ -13,6 +15,7 @@ with open(log_file, 'r') as file:
         else:
             mapping[data['payload'][0]['symbol']] = [data['payload'][2]]
 
+
 # print(mapping)
 for key in mapping:
     value = mapping[key]
@@ -24,12 +27,29 @@ for key in mapping:
         prev = val
     mapping[key] = new_val
 
+
 reverse_mapping = {}
+data = []
 for key, value in mapping.items():
     # print(len(value))
+    data.extend(value)
     for val in value:
         if val in reverse_mapping:
             reverse_mapping[val].append(key)
         else:
             reverse_mapping[val] = [key]
 # print(reverse_mapping)
+# print(data)
+
+
+
+# Fit Gaussian distribution
+mean = np.mean(data)
+std_dev = np.std(data)
+percentile_95 = norm.ppf(0.95, loc=mean, scale=std_dev)
+data_above_95th_percentile = [x for x in data if x > percentile_95]
+Symbols = []
+for val in data_above_95th_percentile:
+    Symbols.extend(reverse_mapping[val])
+Symbols = list(set(Symbols))
+print(Symbols)
