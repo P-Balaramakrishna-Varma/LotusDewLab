@@ -1,7 +1,24 @@
 from websocket import create_connection, WebSocketConnectionClosedException
-import json
+import json, logging
+import pandas as pd
 import ssl as ssl
 # from websocket_connect import get_api_key
+
+
+
+# logging
+def setup_logger(log_file):
+    """ Set up the logger configuration. """
+    logging.basicConfig(filename=log_file, level=logging.INFO, format='%(message)s')
+
+def log_json_record(record):
+    """ Log a JSON record to the specified log file. """
+    logger = logging.getLogger()
+    json_record = json.dumps(record)
+    logger.info(json_record)
+
+log_file = 'stock_values.log'
+setup_logger(log_file)
 
 
 # Check and Establish connection with websocket
@@ -35,48 +52,20 @@ def create_payload(tickers):
       }
     return payload
 
-  # Returns payload for given tickers
-tickers = ["AIAENG", "APLAPOLLO"] # List of tickers to be subscribed, Use the given nifty500 list symbols for reference
+def nifty_50(file_path):
+  df = pd.read_csv(file_path)
+  symbols = df['Symbol'].tolist()
+  return symbols
+
+tickers = nifty_50('niffty50.csv')
 payload = create_payload(tickers)
 
-  # Subscribe Tickers on Websocket 
+# Subscribe Tickers on Websocket 
 ws.send(json.dumps(payload))
 
-  # Recieve ltp for the subscribed tickers 
+
+
 while True:
   data = json.loads(ws.recv())
-  # Response for ltp_quote event, 1 ticker at a time every second for all tickers given
-  #   data = {
-  #     "event": "ltp_response",
-  #     "payload": [
-  #         {
-  #             "expiry_date": "0",
-  #             "instrument": "EQUITY",
-  #             "option_type": "EQ",
-  #             "strike_price": 0,
-  #             "symbol": "ADANIENT"
-  #         },
-  #         25,
-  #         284600,
-  #         2,
-  #         "2013-12-13T13:24:53Z"
-  #     ],
-  #     "ref": null,
-  #     "topic": "api:join"
-  # } 
-
-  # Place Order, json = {"topic" : "api:join", "event" : "order", "payload" : {"phone_no" : "9634699119", "symbol" : "ACC", "buy_sell" : "B", "quantity" : 1, "price" : 1012.34}, "ref" : ""}
-  # order = {
-  #    "topic" : "api:join", 
-  #    "event" : "order", 
-  #    "payload" : {
-  #       "phone_no" : "8712318802", 
-  #       "symbol" : "ACC", 
-  #       "buy_sell" : "B", 
-  #       "quantity" : 1, 
-  #       "price" : 1012.34
-  #       }, 
-  #     "ref" : ""
-  #     }
-  # ws.send(json.dumps(order))
+  log_json_record(data)
   print(data)
