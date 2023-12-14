@@ -17,7 +17,7 @@ def log_json_record(record):
     json_record = json.dumps(record)
     logger.info(json_record)
 
-log_file = 'stock_values.log'
+log_file = 'stock_values1.log'
 setup_logger(log_file)
 
 
