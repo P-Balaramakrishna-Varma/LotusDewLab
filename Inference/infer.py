@@ -14,9 +14,19 @@ with open(log_file, 'r') as file:
             mapping[data['payload'][0]['symbol']] = [data['payload'][2]]
 
 # print(mapping)
+for key in mapping:
+    value = mapping[key]
+    new_val = []
+    
+    prev = value[0]
+    for val in value[1:]:
+        new_val.append(val - prev)
+        prev = val
+    mapping[key] = new_val
 
 reverse_mapping = {}
 for key, value in mapping.items():
+    # print(len(value))
     for val in value:
         if val in reverse_mapping:
             reverse_mapping[val].append(key)
